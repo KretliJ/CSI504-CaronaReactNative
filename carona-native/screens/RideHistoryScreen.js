@@ -23,13 +23,11 @@ const RideHistoryScreen = ({ navigation }) => {
       return;
     }
 
-    // Query for rides where the user was the driver
     const driverQuery = query(
       collection(db, "Rides"),
       where("driverId", "==", user.email)
     );
 
-    // Query for rides where the user was a passenger
     const passengerQuery = query(
       collection(db, "Rides"),
       where("passengers", "array-contains", user.email)
@@ -43,7 +41,6 @@ const RideHistoryScreen = ({ navigation }) => {
           ridesMap.set(doc.id, { ...doc.data(), id: doc.id });
         });
 
-        // Combine with passenger rides
         const unsubscribePassenger = onSnapshot(
           passengerQuery,
           (passengerSnapshot) => {

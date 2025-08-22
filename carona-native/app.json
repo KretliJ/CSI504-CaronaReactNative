@@ -22,7 +22,6 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "android.permission.RECORD_AUDIO",
         "android.permission.RECORD_AUDIO"
       ],
       "package": "com.anonymous.caronasnative"
@@ -37,6 +36,11 @@
           "photosPermission": "O aplicativo precisa de acesso às suas fotos para permitir que você escolha uma imagem de perfil."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "30104c87-19e4-4821-9a1b-30f4cddfa6eb"
+      }
+    }
   }
 }

@@ -130,8 +130,10 @@ const RidesScreen = ({ navigation }) => {
           <Text style={styles.rideRoute}>
             {item.from} → {item.to}
           </Text>
+          {/* Display the price in the ride info */}
           <Text style={styles.rideInfo}>
-            Horário: {item.date} | Vagas: {item.seats}
+            Horário: {item.date} | Vagas: {item.seats} | Preço: R${" "}
+            {item.price?.toFixed(2) || "0.00"}
           </Text>
           <Text style={styles.rideDriver}>Motorista: {item.driverName}</Text>
           <TouchableOpacity

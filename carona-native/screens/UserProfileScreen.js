@@ -43,6 +43,13 @@ const UserProfileScreen = ({ navigation }) => {
     };
     loadLocalProfilePic();
 
+    const userDocRef = doc(db, "Users", user.email);
+    const unsubscribeUser = onSnapshot(userDocRef, (doc) => {
+      if (doc.exists()) {
+        setProfileUser((prevUser) => ({ ...prevUser, ...doc.data() }));
+      }
+    });
+
     const offeredRidesQuery = query(
       collection(db, "Rides"),
       where("driverId", "==", user.email)
@@ -72,13 +79,13 @@ const UserProfileScreen = ({ navigation }) => {
     });
 
     return () => {
+      unsubscribeUser();
       unsubscribeOffered();
       unsubscribeTaken();
     };
   }, [user]);
 
   const handleImagePick = async () => {
-    console.log("Opening image picker...");
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
@@ -143,11 +150,17 @@ const UserProfileScreen = ({ navigation }) => {
     );
   }
 
+  // Calculate average rating
+  const averageRating =
+    profileUser.ratingCount > 0
+      ? (profileUser.totalStars / profileUser.ratingCount).toFixed(1)
+      : "N/A";
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate("Rides")}>
-          <Ionicons name="arrow-back" size={24} color="white" />
+        <TouchableOpacity onPress={() => navigation.openDrawer()}>
+          <Ionicons name="menu" size={32} color="white" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Meu Perfil</Text>
         <View style={{ width: 24 }} />
@@ -179,6 +192,14 @@ const UserProfileScreen = ({ navigation }) => {
             </TouchableOpacity>
             <Text style={styles.userName}>{profileUser.name}</Text>
             <Text style={styles.userInfo}>{profileUser.email}</Text>
+
+            <View style={styles.ratingContainer}>
+              <Ionicons name="star" size={20} color="#ffc107" />
+              <Text style={styles.ratingText}>
+                {averageRating} ({profileUser.ratingCount || 0} avaliações)
+              </Text>
+            </View>
+
             <Text style={styles.userInfo}>Perfil: {profileUser.role}</Text>
             <View style={styles.statsContainer}>
               <View style={styles.statBox}>
@@ -207,7 +228,7 @@ const UserProfileScreen = ({ navigation }) => {
         }
         ListFooterComponent={
           <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-            <Text style={styles.logoutButtonText}>Deslogar</Text>
+            <Text style={styles.logoutButtonText}>Sair</Text>
           </TouchableOpacity>
         }
         contentContainerStyle={styles.listContentContainer}
@@ -259,7 +280,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#e94560",
     borderRadius: 15,
     padding: 5,
-    pointerEvents: "none", // This ensures the touch passes through to the parent
+    pointerEvents: "none",
   },
   userName: {
     color: "white",
@@ -273,6 +294,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginTop: 10,
     textAlign: "center",
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  ratingText: {
+    color: "#ccc",
+    fontSize: 16,
+    marginLeft: 5,
   },
   statsContainer: {
     flexDirection: "row",

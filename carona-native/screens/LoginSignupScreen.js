@@ -36,7 +36,7 @@ const LoginSignup = ({ navigation }) => {
   const [password, setPassword] = useState("");
   const [cPassword, setCPassword] = useState("");
   const [action, setAction] = useState("Cadastrar");
-  const [userType, setUserType] = useState("Passageiro");
+  const [userType, setUserType] = useState(null);
 
   const resetAllFields = () => {
     setUser("");
@@ -46,17 +46,20 @@ const LoginSignup = ({ navigation }) => {
   };
 
   const handleRegister = async () => {
-    const emailRegex = /^[a-zA-Z0-9._-]+@ufop\.[a-zA-Z]{2,}/;
-    const emailRegex2 = /^[a-zA-Z0-9._-]+@aluno.ufop\.[a-zA-Z]{2,}/;
-    if (
-      !emailRegex.test(email.toLowerCase()) &&
-      !emailRegex2.test(email.toLowerCase())
-    ) {
+    const emailRegex = /^[a-zA-Z0-9._-]+@(aluno\.)?ufop\.[a-zA-Z]{2,}/;
+    if (!emailRegex.test(email.toLowerCase())) {
       Alert.alert("Erro", "Por favor, use um e-mail institucional da UFOP.");
       return;
     }
     if (!user || !email || !password || !cPassword) {
       Alert.alert("Erro", "Por favor, preencha todos os campos.");
+      return;
+    }
+    if (!userType) {
+      Alert.alert(
+        "Erro",
+        "Por favor, selecione um tipo de perfil (Motorista, Passageiro ou Ambos)."
+      );
       return;
     }
     if (password !== cPassword) {
@@ -120,7 +123,6 @@ const LoginSignup = ({ navigation }) => {
       const isPasswordCorrect = verifyPassword(password, userData.password);
 
       if (isPasswordCorrect) {
-        console.log("Login realizado com sucesso!");
         login(userData);
         Alert.alert("Sucesso", `Bem-vindo(a) de volta, ${userData.name}!`);
       } else {
@@ -146,13 +148,6 @@ const LoginSignup = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.body}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backButtonText}>Voltar</Text>
-        </TouchableOpacity>
-
         <View style={styles.containerLogin}>
           <View style={styles.headerLogin}>
             <Text style={styles.text}>{action}</Text>
@@ -213,7 +208,6 @@ const LoginSignup = ({ navigation }) => {
             )}
           </View>
 
-          {/* --- User Type Selection --- */}
           {action === "Cadastrar" && (
             <View style={styles.userTypeContainer}>
               <Text style={styles.userTypeTitle}>Eu sou:</Text>
@@ -273,7 +267,9 @@ const LoginSignup = ({ navigation }) => {
           )}
 
           {action === "Entrar" && (
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("ForgotPassword")}
+            >
               <Text style={styles.forgotPassword}>Esqueci minha senha</Text>
             </TouchableOpacity>
           )}
@@ -433,7 +429,6 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
   },
-  // User Type Styles
   userTypeContainer: {
     width: "100%",
     marginTop: 20,

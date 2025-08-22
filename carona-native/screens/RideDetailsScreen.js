@@ -11,7 +11,7 @@ import {
 import { db } from "../firebase";
 import {
   doc,
-  getDoc,
+  onSnapshot,
   updateDoc,
   arrayRemove,
   increment,
@@ -26,26 +26,30 @@ const RideDetailsScreen = ({ route, navigation }) => {
   const [ride, setRide] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchRide = async () => {
-    const docRef = doc(db, "Rides", rideId);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      setRide({ ...docSnap.data(), id: docSnap.id });
-    } else {
-      console.log("No such document!");
-      Alert.alert("Erro", "Esta carona não foi encontrada.");
-    }
-    setLoading(false);
-  };
-
   useEffect(() => {
-    fetchRide();
+    const docRef = doc(db, "Rides", rideId);
+    const unsubscribe = onSnapshot(
+      docRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          setRide({ ...docSnap.data(), id: docSnap.id });
+        } else {
+          console.log("No such document!");
+          Alert.alert("Erro", "Esta carona не foi encontrada.");
+        }
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching ride details: ", error);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
   }, [rideId]);
 
   const handleCancelReservation = async () => {
     if (!user) return;
-
     try {
       const rideRef = doc(db, "Rides", ride.id);
       await updateDoc(rideRef, {
@@ -53,7 +57,6 @@ const RideDetailsScreen = ({ route, navigation }) => {
         passengers: arrayRemove(user.email),
       });
       Alert.alert("Sucesso", "Sua reserva foi cancelada.");
-      fetchRide(); // Refresh the ride details
     } catch (error) {
       console.error("Error cancelling reservation: ", error);
       Alert.alert("Erro", "Não foi possível cancelar sua reserva.");
@@ -67,7 +70,6 @@ const RideDetailsScreen = ({ route, navigation }) => {
         status: "completed",
       });
       Alert.alert("Sucesso", "Carona marcada como concluída.");
-      fetchRide();
     } catch (error) {
       console.error("Error completing ride: ", error);
       Alert.alert("Erro", "Não foi possível concluir a carona.");
@@ -77,7 +79,7 @@ const RideDetailsScreen = ({ route, navigation }) => {
   const handleDeleteRide = async () => {
     Alert.alert(
       "Deletar Carona",
-      "Tem certeza que deseja deletar esta carona? Esta ação não pode ser desfeita.",
+      "Tem certeza que deseja deletar esta carona?",
       [
         { text: "Cancelar", style: "cancel" },
         {
@@ -122,6 +124,7 @@ const RideDetailsScreen = ({ route, navigation }) => {
   const isDriver = user?.email === ride.driverId;
   const isPassenger = ride.passengers?.includes(user?.email);
   const isCompleted = ride.status === "completed";
+  const hasUserRated = ride.usersWhoRated?.includes(user?.email);
 
   return (
     <View style={styles.container}>
@@ -135,6 +138,26 @@ const RideDetailsScreen = ({ route, navigation }) => {
       <Text style={styles.title}>
         {ride.from} → {ride.to}
       </Text>
+
+      {isCompleted && (isDriver || isPassenger) && !hasUserRated && (
+        <TouchableOpacity
+          style={styles.rateButton}
+          onPress={() => navigation.navigate("Rating", { ride: ride })}
+        >
+          <Ionicons name="star-half-outline" size={24} color="#1a1a2e" />
+          <Text style={styles.rateButtonText}>Avaliar Carona</Text>
+        </TouchableOpacity>
+      )}
+
+      {(isDriver || isPassenger) && !isCompleted && (
+        <TouchableOpacity
+          style={styles.chatButton}
+          onPress={() => navigation.navigate("Chat", { rideId: ride.id })}
+        >
+          <Ionicons name="chatbubbles-outline" size={24} color="white" />
+          <Text style={styles.chatButtonText}>Abrir Chat da Carona</Text>
+        </TouchableOpacity>
+      )}
 
       <View style={styles.card}>
         <View style={styles.detailContainer}>
@@ -179,7 +202,8 @@ const RideDetailsScreen = ({ route, navigation }) => {
         )}
       </View>
 
-      {isPassenger && !isDriver && (
+      {/* This button will now only appear if the user is a passenger AND the ride is not completed */}
+      {isPassenger && !isDriver && !isCompleted && (
         <TouchableOpacity
           style={styles.cancelButton}
           onPress={handleCancelReservation}
@@ -242,6 +266,36 @@ const styles = StyleSheet.create({
     marginTop: 80,
     marginBottom: 20,
   },
+  chatButton: {
+    flexDirection: "row",
+    backgroundColor: "#007bff",
+    paddingVertical: 12,
+    borderRadius: 25,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  chatButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  rateButton: {
+    flexDirection: "row",
+    backgroundColor: "#ffc107",
+    paddingVertical: 12,
+    borderRadius: 25,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  rateButtonText: {
+    color: "#1a1a2e",
+    fontWeight: "bold",
+    fontSize: 16,
+    marginLeft: 10,
+  },
   card: {
     backgroundColor: "rgba(255, 255, 255, 0.1)",
     borderRadius: 10,
@@ -263,10 +317,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   activeText: {
-    color: "#28a745", // Green
+    color: "#28a745",
   },
   completedText: {
-    color: "#6c757d", // Gray
+    color: "#6c757d",
   },
   passengerTitle: {
     color: "white",
@@ -286,7 +340,7 @@ const styles = StyleSheet.create({
     marginTop: 100,
   },
   cancelButton: {
-    backgroundColor: "#ffc107", // Yellow for cancel
+    backgroundColor: "#ffc107",
     paddingVertical: 15,
     borderRadius: 25,
     alignItems: "center",
@@ -301,14 +355,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   completeButton: {
-    backgroundColor: "#28a745", // Green
+    backgroundColor: "#28a745",
     paddingVertical: 15,
     borderRadius: 25,
     alignItems: "center",
     marginBottom: 10,
   },
   deleteButton: {
-    backgroundColor: "#dc3545", // Red
+    backgroundColor: "#dc3545",
     paddingVertical: 15,
     borderRadius: 25,
     alignItems: "center",
