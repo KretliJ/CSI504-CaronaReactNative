@@ -13,8 +13,8 @@ compatíveis, oferecendo uma alternativa econômica, sustentável e segura de tr
     - Se cadastrem como motorista, passageiro ou ambos, fornecendo um email
 institucional válido.
     - Publiquem e busquem caronas.
-    - Negociem e confirmem viagens. (TODO)
-    - Avaliem e sejam avaliados após cada corrida. (TODO)
+    - Negociem e confirmem viagens.
+    - Avaliem e sejam avaliados após cada corrida.
 
 O sistema estará disponível para Android. Interface responsiva e compatível com
 diferentes tamanhos de tela. O app deve ser desenvolvido com React Native e banco de
@@ -24,6 +24,12 @@ dados Firebase.
 * Motorista – oferece caronas, define horários, preços e regras.
 * Passageiro – procura caronas e realiza reservas.
 * Administrador – gerencia denúncias, perfis e transações.
+
+## Problemas e recursos faltantes
+* O sistema conta com uma página de placeholder na função "Esqueci minha senha", indicando que a recuperação de conta é uma funcionalidade futura.
+  - O sistema utiliza o firebase como backend e para operações CRUD, mas houve a escolha de não usar o firebase auth porque foi necessário que cada usuário fosse registrado com funções customizadas (Motorista, Passageiro, Ambos, Administrador), logo a implementação deste sistema requer API de email e verificação de email válido, sendo módulos considerados fora do escopo para a versão atual do protótipo. Por essa razão, a tela "Esqueci minha senha" permanece como um placeholder.
+* A página de chat individual da carona ainda não conta com o nome ou email do usuário sobre os balões de fala.
+* A página de chat individual permite uma conversa apenas entre o motorista e o primeiro passageiro que se registrou na carona.
 
 ## Guia de instalação
 
