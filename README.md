@@ -41,13 +41,16 @@ dados Firebase.
 * 3: Instalar bibliotecas
    ```bash
    npm install
-   
+   ```
+   ```bash
    npx expo install @react-navigation/native @react-navigation/native-stack @react-navigation/drawer react-native-gesture-handler react-native-reanimated @react-native-async-storage/async-storage firebase crypto-js expo-image-picker react-native-gifted-chat react-native-keyboard-controller
    ```
 * 4: Criar dev build
   - Faça login no Expo e EAS
    ```bash
    npx expo login
+   ```
+   ```bash
    eas login
    ```
    - Crie a build
