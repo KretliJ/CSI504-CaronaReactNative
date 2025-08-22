@@ -71,3 +71,7 @@ dados Firebase.
   ```bash
   npx expo start --dev-client
   ```
+## Guia de instalação
+* Pode-se criar uma nova conta ou usar uma das existentes:
+-testador(2-6)@aluno.ufop.edu.br
+-Testador
