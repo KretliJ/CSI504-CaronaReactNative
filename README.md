@@ -36,6 +36,8 @@ dados Firebase.
 * 2: Repositótio
    ```bash
    git clone <link-do-repositorio>
+   ```
+   ```bash
    cd ./carona-native/
    ```
 * 3: Instalar bibliotecas
